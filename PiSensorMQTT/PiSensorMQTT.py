@@ -171,6 +171,8 @@ def readSensors():
 # this is used to track when we have a new frame
 piCameraLastFrameIndex = -1
 
+mustExit = False;
+
 def piCameraSendFrameHelper(stream, frame):
     ''' do the actual frame processing '''
     global piCameraLastFrameIndex
@@ -213,6 +215,9 @@ def piCameraSendFrame(stream):
  
 def piCameraLoop():
     ''' This is the main loop when the pi camera is enabled. '''
+
+    global mustExit
+
     # Activate the video stream
 
     with picamera.PiCamera(CAMERA_INDEX) as camera:
@@ -239,6 +244,7 @@ def piCameraLoop():
   
         finally:
             camera.stop_recording()
+            mustExit = True
 
 '''
 ------------------------------------------------------------
@@ -323,8 +329,9 @@ try:
         try:
             piCameraLoop()
         except:
-            print ('No Pi camera found - continuing without video')
-            noCameraLoop()
+            if not mustExit:
+                print ('No Pi camera found - continuing without video')
+                noCameraLoop()
     else:
         noCameraLoop()
 except:
