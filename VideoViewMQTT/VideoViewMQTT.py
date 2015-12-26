@@ -31,6 +31,7 @@ import binascii
 import cStringIO
 import getopt
 import time
+import json
 
 '''
 ------------------------------------------------------------
@@ -47,7 +48,8 @@ def onSubscribe(client, data, mid, grantedQos):
 
 def onMessage(client, userdata, message):
     try:
-        image = binascii.unhexlify(message.payload)
+        jsonObj = json.loads(message.payload)
+        image = binascii.unhexlify(jsonObj['video'])
         imageFile = cStringIO.StringIO(image)
         imageSurface = pygame.image.load(imageFile)
         screen.blit(imageSurface, (0, 0))

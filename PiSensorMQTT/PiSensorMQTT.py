@@ -140,7 +140,9 @@ def readSensors():
     sensorDict = {}
     
     sensorDict[SensorJSON.TIMESTAMP] = time.time()
-    
+    sensorDict[SensorJSON.DEVICEID] = deviceID
+    sensorDict[SensorJSON.TOPIC] = sensorTopic
+
     if accel.dataValid:
         accelData = accel.readAccel()
         sensorDict[SensorJSON.ACCEL_DATA] = accelData
@@ -184,7 +186,14 @@ def piCameraSendFrameHelper(stream, frame):
     stream.seek(frame.position)
     image = stream.read(frame.frame_size)
     binImage = binascii.hexlify(image)
-    MQTTClient.publish(videoTopic, binImage)
+
+    sensorDict = {}
+    sensorDict[SensorJSON.TIMESTAMP] = time.time()
+    sensorDict[SensorJSON.DEVICEID] = deviceID
+    sensorDict[SensorJSON.TOPIC] = videoTopic
+    sensorDict[SensorJSON.VIDEO_DATA] = binImage
+
+    MQTTClient.publish(videoTopic, json.dumps(sensorDict))
 
 
 def piCameraSendFrame(stream):

@@ -26,9 +26,12 @@
 
 # variables used in JSON sensor records
 
+DEVICEID = 'deviceID'                   # id of device
+TOPIC = 'topic'                         # original message topic
 TIMESTAMP = 'timestamp'                 # seconds since epoch
 ACCEL_DATA = 'accel'                    # accelerometer x, y, z data in gs
 LIGHT_DATA = 'light'                    # light data in lux
 TEMPERATURE_DATA = 'temperature'        # temperature data in degrees C
 PRESSURE_DATA = 'pressure'              # pressure in Pa
 HUMIDITY_DATA = 'humidity'              # humidity in %RH
+VIDEO_DATA = 'video'                    # video data in hex
