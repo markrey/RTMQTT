@@ -24,8 +24,6 @@
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-# camera parameters - change as required
-
 # Now onto the real stuff
 
 import pyaudio
@@ -78,7 +76,7 @@ def onConnect(client, userdata, code):
 
 deviceID = 'rtaudio'
 brokerAddress = 'localhost'
-deviceSecret = 'rtaudiomqtt'
+deviceSecret = 'rtaudio'
 clientID = 'rtaudiomqttclient'
 audioIndex = 0
 audioRate = 8000
@@ -94,11 +92,11 @@ except:
     print ('  -y = daemon mode')
     print ('\nDefaults:')
     print ('  -b localhost (hostname or IP address)')
-    print ('  -c pisensorClient')
-    print ('  -d pisensor')
+    print ('  -c rtaudiomqttclient')
+    print ('  -d rtaudio')
     print ('  -h 2')
     print ('  -r 8000')
-    print ('  -s pisensor')
+    print ('  -s rtaudio')
     sys.exit(2)
 
 for opt, arg in opts:
