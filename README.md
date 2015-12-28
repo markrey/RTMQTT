@@ -107,6 +107,13 @@ To run RTSensorMQTT for example:
     
 The default broker address is localhost so if the broker is running on the same machine then the -b option can be omitted. The broker_address can be either an IP address or hostname if the network can resolve the hostname to an IP address.
 
+Note that RTUVCCamMQTT defaults to a windowed mode and displays a preview of the video stream. If running in console mode or on a Raspberry Pi, the script should be run in non-GUI mode:
+
+    cd ~/RTMQTT/RTUVCCamMQTT
+    python RTUVCCamMQTT.py -b broker_address -x
+    
+Running in GUI mode on a Raspberry Pi at the default 30 frames per second is not recommended.
+
 ### Displaying the video and audio streams
 
 The RTMediaViewMQTT script can be used to display video and audio streams. By default, the topics it subscribes to are the default topics for RTUVCCamMQTT and RTAudioMQTT but these can be changed using command line options. Run:
