@@ -32,65 +32,15 @@ import time
 import json
 import paho.mqtt.client as paho
 import binascii
+import picamera
 
-# check if picamera is available
+sys.path.append('../SensorDrivers')
 
-cameraPresent = True
-
-try:
-    import picamera
-except:
-    cameraPresent = False
+import SensorJSON
 
 # camera parameters - change as required
 
 CAMERA_INDEX = 0
-CAMERA_WIDTH = 640
-CAMERA_HEIGHT = 480
-CAMERA_RATE = 10
-
-# import the sensor drivers
-
-sys.path.append('SensorDrivers')
-
-import RT_ADXL345
-import RT_TSL2561
-import RT_TMP102
-import RT_BMP180
-import RT_MCP9808
-import RT_HTU21D
-import RT_NullSensor
-import SensorJSON
-
-# The set of sensors. Uncomment one in each class or use NullSensor if no physical sensor
-# Multi sensor objects (such as BMP180 for temp and pressure) can be reused
-
-# Acceleration
-
-#accel = RT_NullSensor.RT_NullSensor()
-accel = RT_ADXL345.RT_ADXL345()
-
-# Light
-
-#light = RT_NullSensor.RT_NullSensor()
-light = RT_TSL2561.RT_TSL2561()
-
-# Temperature
-
-#temperature = RT_NullSensor.RT_NullSensor()
-#temperature = RT_TMP102.RT_TMP102()
-#temperature = RT_MCP9808.RT_MCP9808()
-temperature = RT_BMP180.RT_BMP180()
-
-# Pressure
-
-#pressure = RT_NullSensor.RT_NullSensor()
-pressure = RT_BMP180.RT_BMP180()
-
-# Humidity
-
-#humidity = RT_NullSensor.RT_NullSensor()
-humidity = RT_HTU21D.RT_HTU21D()
 
 '''
 ------------------------------------------------------------
@@ -101,69 +51,6 @@ def onConnect(client, userdata, code):
     print('Connected: ' + str(code))
     sys.stdout.flush()
 
-'''
-------------------------------------------------------------
-    Sensor functions
-'''
-
-# global to maintain last sensor read time
-lastSensorReadTime = time.time() 
-
-
-def initSensors():
-    accel.enable()
-    light.enable()
-    temperature.enable()
-    pressure.enable()
-    humidity.enable()
-
-def readSensors():
-    global lastSensorReadTime
-
-    if ((time.time() - lastSensorReadTime) < sampleInterval):
-        return
-    # call background loops
-    if accel.sensorValid:
-        accel.background()
-    if light.sensorValid:
-        light.background()
-    if temperature.sensorValid:
-        temperature.background()
-    if pressure.sensorValid:
-        pressure.background()
-    if humidity.sensorValid:
-        humidity.background()
-
-    # time send send the sensor readings
-    lastSensorReadTime = time.time()
-    
-    sensorDict = {}
-    
-    sensorDict[SensorJSON.TIMESTAMP] = time.time()
-    sensorDict[SensorJSON.DEVICEID] = deviceID
-    sensorDict[SensorJSON.TOPIC] = sensorTopic
-
-    if accel.dataValid:
-        accelData = accel.readAccel()
-        sensorDict[SensorJSON.ACCEL_DATA] = accelData
-        
-    if light.dataValid:
-        lightData = light.readLight()
-        sensorDict[SensorJSON.LIGHT_DATA] = lightData
-
-    if temperature.dataValid:
-        temperatureData = temperature.readTemperature()
-        sensorDict[SensorJSON.TEMPERATURE_DATA] = temperatureData
-
-    if pressure.dataValid:
-        pressureData = pressure.readPressure()
-        sensorDict[SensorJSON.PRESSURE_DATA] = pressureData
-        
-    if humidity.dataValid:
-        humidityData = humidity.readHumidity()
-        sensorDict[SensorJSON.HUMIDITY_DATA] = humidityData
-
-    MQTTClient.publish(sensorTopic, json.dumps(sensorDict))
 
 '''
 ------------------------------------------------------------
@@ -192,6 +79,10 @@ def piCameraSendFrameHelper(stream, frame):
     sensorDict[SensorJSON.DEVICEID] = deviceID
     sensorDict[SensorJSON.TOPIC] = videoTopic
     sensorDict[SensorJSON.VIDEO_DATA] = binImage
+    sensorDict[SensorJSON.VIDEO_WIDTH] = cameraWidth
+    sensorDict[SensorJSON.VIDEO_HEIGHT] = cameraHeight
+    sensorDict[SensorJSON.VIDEO_RATE] = cameraRate
+    sensorDict[SensorJSON.VIDEO_FORMAT] = 'mjpeg'
 
     MQTTClient.publish(videoTopic, json.dumps(sensorDict))
 
@@ -203,7 +94,7 @@ def piCameraSendFrame(stream):
     global piCameraLastFrameIndex
 
     with stream.lock:
-        if (CAMERA_RATE > 10):
+        if (cameraRate > 10):
             for frame in stream.frames:
                 if (frame.index > piCameraLastFrameIndex):
                     piCameraSendFrameHelper(stream, frame)
@@ -223,15 +114,15 @@ def piCameraSendFrame(stream):
         
  
 def piCameraLoop():
-    ''' This is the main loop when the pi camera is enabled. '''
+    ''' This is the main loop. '''
 
     global mustExit
 
     # Activate the video stream
 
     with picamera.PiCamera(CAMERA_INDEX) as camera:
-        camera.resolution = (CAMERA_WIDTH, CAMERA_HEIGHT)
-        camera.framerate = (CAMERA_RATE, 1)
+        camera.resolution = (cameraWidth, cameraHeight)
+        camera.framerate = (cameraRate, 1)
 
         # need enough buffering to overcome any latency
         stream = picamera.PiCameraCircularIO(camera, seconds = 1)
@@ -245,9 +136,6 @@ def piCameraLoop():
                 camera.wait_recording(0)
                 piCameraSendFrame(stream)
                 
-                # see if anythng new from the sensors
-                readSensors()
-
                 #give other things a chance
                 time.sleep(0.01)
   
@@ -257,43 +145,32 @@ def piCameraLoop():
 
 '''
 ------------------------------------------------------------
-    No camera main loop
-'''
-
-
-def noCameraLoop():
-    ''' This is the main loop when no camera is running. '''
-
-    while True:
-        # see if anything from the sensors
-        readSensors()
-
-        # give other things a chance
-        time.sleep(0.01)
-
-'''
-------------------------------------------------------------
     Main code
 '''
 
-deviceID = 'pisensor'
+deviceID = 'rtpicam'
 brokerAddress = 'localhost'
-deviceSecret = 'pisensor'
-clientID = 'pisensorclient'
-sampleInterval = 0.1
+deviceSecret = 'rtpicam'
+clientID = 'rtpicamclient'
+cameraWidth = 1280
+cameraHeight = 720
+cameraRate = 30
 
 # process command line args
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "b:c:d:i:s:")
+    opts, args = getopt.getopt(sys.argv[1:], "b:c:d:h:r:s:w:")
 except:
-    print ('PiSensorMQTT.py -b <brokerAddr> -c <clientID> -d <deviceID> -i <interval> -s <secret>')
-    print ('Defaults:')
+    print ('RTPiCamMQTT.py -b <brokerAddr> -c <clientID> -d <deviceID> -h <frame_height>')
+    print ('      -r <frame_rate> -s <secret> -w <frame_width>')
+    print ('\nDefaults:')
     print ('  -b localhost (hostname or IP address)')
-    print ('  -c pisensorClient')
-    print ('  -d pisensor')
-    print ('  -i 0.1 (0.1 seconds between samples)')
-    print ('  -s pisensor')
+    print ('  -c rtsensorClient')
+    print ('  -d rtsensor')
+    print ('  -h 720')
+    print ('  -r 30')
+    print ('  -s rtsensor')
+    print ('  -w 1280')
     sys.exit(2)
 
 for opt, arg in opts:
@@ -303,17 +180,18 @@ for opt, arg in opts:
         clientID = arg
     if opt == '-d':
         deviceID = arg
+    if opt == '-h':
+        cameraHeight = int(arg)
     if opt == '-r':
-        sampleInterval = float(arg)
+        cameraRate = int(arg)
     if opt == '-s':
         deviceSecret = arg
+    if opt == '-w':
+        cameraWidth = int(arg)
 
-print("PiSensorMQTT starting...")
+print("RTPiCamMQTT starting...")
 sys.stdout.flush()
 
-initSensors()
-
-sensorTopic = deviceID + '/sensors'
 videoTopic = deviceID + '/video'
 
 MQTTClient = paho.Client(clientID, protocol=paho.MQTTv31)
@@ -334,17 +212,10 @@ while True:
 MQTTClient.loop_start()
 
 try:
-    if cameraPresent:
-        try:
-            piCameraLoop()
-        except:
-            if not mustExit:
-                print ('No Pi camera found - continuing without video')
-                noCameraLoop()
-    else:
-        noCameraLoop()
+    piCameraLoop()
 except:
-    pass
+    if not mustExit:
+        print ('No Pi camera found')
 
 # Exiting so clean everything up.
 

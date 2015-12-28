@@ -1,4 +1,3 @@
-#!/usr/bin/python
 '''
 ////////////////////////////////////////////////////////////////////////////
 //
@@ -24,14 +23,21 @@
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-# variables used in JSON sensor records
+from distutils.core import setup, Extension
 
-DEVICEID = 'deviceID'                   # id of device
-TOPIC = 'topic'                         # original message topic
-TIMESTAMP = 'timestamp'                 # seconds since epoch
-ACCEL_DATA = 'accel'                    # accelerometer x, y, z data in gs
-LIGHT_DATA = 'light'                    # light data in lux
-TEMPERATURE_DATA = 'temperature'        # temperature data in degrees C
-PRESSURE_DATA = 'pressure'              # pressure in Pa
-HUMIDITY_DATA = 'humidity'              # humidity in %RH
-VIDEO_DATA = 'video'                    # video data in hex
+mod = Extension('RTUVCCam',
+                sources = ["RTUVCCam.cpp"],
+                include_dirs = ["/usr/include/syntro/RTUVCCamLib"],
+                library_dirs = ["/usr/lib/x86_64-linux-gnu"],
+                libraries = ["RTUVCCamLib", "pthread"]
+                )
+
+setup (name = 'RTUVCCam',
+       version = '1.0',
+       description = 'RTUVCCam library',
+       ext_modules = [mod])
+
+setup (name = 'RTUVCCam',
+       version = '1.0',
+       description = 'RTUVCCam library',
+       ext_modules = [mod])
