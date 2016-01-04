@@ -4,7 +4,7 @@
 //
 //  This file is part of RTMQTT
 //
-//  Copyright (c) 2015, richards-tech, LLC
+//  Copyright (c) 2015-2016, richards-tech, LLC
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy of
 //  this software and associated documentation files (the "Software"), to deal in
@@ -24,18 +24,28 @@
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import pygame
-import pyaudio
+# Now do the imports
+
 import sys
+
+# add the sensor driver directory
+sys.path.append('../SensorDrivers')
+
 import paho.mqtt.client as paho
 import binascii
-import cStringIO
 import getopt
 import time
 import json
-sys.path.append('../SensorDrivers')
 
 import SensorJSON
+import SensorPlot
+import SensorRecords
+
+
+# The topic map contains the mapping between topic and sensor object
+
+topicMap = {}
+
 
 '''
 ------------------------------------------------------------
@@ -51,87 +61,69 @@ def onSubscribe(client, data, mid, grantedQos):
     sys.stdout.flush()
 
 def onMessage(client, userdata, message):
-    global firstVideo, screen, firstAudio, audioStream
+    global topicMap
     try:
-        jsonObj = json.loads(message.payload)
-
-        if message.topic == videoTopic:
-            try:
-                if firstVideo:
-                    firstVideo = False
-                    size=(int(jsonObj[SensorJSON.VIDEO_WIDTH]), int(jsonObj[SensorJSON.VIDEO_HEIGHT]))
-                    screen = pygame.display.set_mode(size)
-
-                image = binascii.unhexlify(jsonObj[SensorJSON.VIDEO_DATA])
-                imageFile = cStringIO.StringIO(image)
-                imageSurface = pygame.image.load(imageFile)
-                screen.blit(imageSurface, (0, 0))
-                pygame.display.flip()
-            except:
-                print ("video data error", sys.exc_info()[0],sys.exc_info()[1])
-
-        else:
-            try:
-                if firstAudio:
-                    global audioStream
-                    firstAudio = False
-                    audioStream = audioDevice.open(format=pyaudio.paInt16, channels=int(jsonObj[SensorJSON.AUDIO_CHANNELS]),
-                        rate=int(jsonObj[SensorJSON.AUDIO_RATE]), output=True)
-                samples = binascii.unhexlify(jsonObj[SensorJSON.AUDIO_DATA])
-                audioStream.write(samples)
-            except:
-                print ("audio data error", sys.exc_info()[0],sys.exc_info()[1])
+        topicMap[sensorTopic].newJSONData(message.payload)
 
     except:
         print ("JSON error", sys.exc_info()[0],sys.exc_info()[1])
+
+
 
 '''
 ------------------------------------------------------------
     Main code
 '''
 
-deviceID = 'rtmediaview'
-deviceSecret = 'rtmediaview'
+deviceID = 'rtsensorview'
+deviceSecret = 'rtsensorview'
 brokerAddress = 'localhost'
-videoTopic = 'rtuvccam/video'
-audioTopic = 'rtaudio/audio'
-clientID = 'rtmediaviewclient'
-
-firstVideo = True
-firstAudio = True
-audioStream = None
+clientID = 'rtsensorviewclient'
+sensorTopic = "rtsensor/sensors"
+plotInterval = 1.0
 
 # process command line args
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "a:b:c:d:s:v:")
+    opts, args = getopt.getopt(sys.argv[1:], "b:c:d:p:s:t:")
 except:
-    print ('RTMediaViewMQTT.py -a <audioTopic> -b <brokerAddr> -c <clientID> -d <deviceID> -s <secret> -v videoTopic')
+    print ('RTSensorViewMQTT.py -b <brokerAddr> -c <clientID> -d <deviceID> -p <plotInterval>')
+    print ('          -s <secret> -t <sensorTopic')
     print ('\nDefaults:')
-    print ('  -a rtaudio/audio')
     print ('  -b localhost (hostname or IP address)')
-    print ('  -c rtmediaviewclient')
-    print ('  -d rtmediaview')
-    print ('  -s rtmediaview')
-    print ('  -v rtuvccam/video')
+    print ('  -c rtsensorviewclient')
+    print ('  -d rtsensorview')
+    print ('  -p 1.0')
+    print ('  -s rtsensorview')
+    print ('  -t rtsensor/sensors')
     sys.exit(2)
 
 for opt, arg in opts:
-    if opt == '-a':
-        audioTopic = arg
     if opt == '-b':
         brokerAddress = arg
     if opt == '-c':
         clientID = arg
     if opt == '-d':
         deviceID = arg
+    if opt == '-p':
+        plotInterval = float(arg)
     if opt == '-s':
         deviceSecret = arg
-    if opt == '-v':
-        videoTopic = arg
+    if opt == '-t':
+        sensorTopic = arg
 
-print("RTMediaViewMQTT starting...")
+print("RTSensorViewMQTT starting...")
 sys.stdout.flush()
+
+topicMap[sensorTopic] = SensorRecords.SensorRecords(sensorTopic, plotInterval)
+
+# start up the plotter
+
+sensorPlot = SensorPlot.SensorPlot()
+
+# lastPlotTime is used to control plot updates
+lastPlotTime = time.time() - plotInterval
+
 
 MQTTClient = paho.Client(clientID, protocol=paho.MQTTv31)
 
@@ -151,30 +143,21 @@ while True:
         print ("waiting to connect to broker",brokerAddress)
         time.sleep(1)
 
-pygame.init()
-
-audioDevice = pyaudio.PyAudio()
-
-MQTTClient.subscribe(videoTopic, 0)
-MQTTClient.subscribe(audioTopic, 0)
+MQTTClient.subscribe(sensorTopic, 0)
 
 MQTTClient.loop_start()
 
 try:
     while True:
-        # could add some extra functionality here if required
-        time.sleep(1)
-        pass
+        if (time.time() - lastPlotTime) >= plotInterval:
+            lastPlotTime = time.time()
+            sensorPlot.plot(topicMap.values())
+        time.sleep(0.05)
 except:
     pass
 
 # Exiting so clean everything up.
 
-try:
-    audioStream.stop_stream()
-    audioStream.close()
-except:
-    pass
-audioDevice.terminate()
 MQTTClient.loop_stop()
 print("Exiting")
+
