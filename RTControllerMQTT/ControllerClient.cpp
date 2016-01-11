@@ -20,3 +20,47 @@
 //  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+#include "ControllerClient.h"
+#include "RTControllerMQTT.h"
+#include "RTMQTTDevice.h"
+#include "RTMQTTLog.h"
+
+#define TAG "ControllerClient"
+
+ControllerClient::ControllerClient() : RTMQTTClient(0)
+{
+
+}
+void ControllerClient::clientInit()
+{
+    QSettings settings;
+
+    int count = settings.beginReadArray(RTCONTROLLER_PARAMS_SERVERS);
+
+    for (int i = 0; i < count; i++) {
+        settings.setArrayIndex(i);
+        QString serverID = settings.value(RTCONTROLLER_PARAMS_SERVERID).toString();
+        addSubTopic(serverID + "/" + RTCONTROLLER_SERVER_STATUS_TOPIC);
+      }
+    settings.endArray();
+}
+
+void ControllerClient::clientStop()
+{
+}
+
+void ControllerClient::clientTimer(QTimerEvent *)
+{
+
+}
+
+void ControllerClient::clientProcessReceivedMessage(QString topic, QJsonObject json)
+{
+    emit newUpdate(topic, json);
+}
+
+void ControllerClient::setDeviceLevel(QString topic, QJsonObject newDeviceLevel)
+{
+    publish(topic, newDeviceLevel);
+}

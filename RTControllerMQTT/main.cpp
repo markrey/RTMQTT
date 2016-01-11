@@ -20,3 +20,42 @@
 //  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+#include "RTControllerMQTT.h"
+#include "RTMQTTClient.h"
+
+#include <qapplication.h>
+
+void presetDefaultSettings();
+
+int main(int argc, char *argv[])
+{
+    QApplication a(argc, argv);
+    QCoreApplication::setOrganizationName("richards-tech");
+    QCoreApplication::setOrganizationDomain("richards-tech.com");
+    QCoreApplication::setApplicationName("RTControllerMQTT");
+    presetDefaultSettings();
+
+    a.setAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents);
+
+    RTControllerMQTT *w = new RTControllerMQTT();
+
+    w->show();
+
+    return a.exec();
+}
+
+void presetDefaultSettings()
+{
+    QSettings settings;
+    settings.beginGroup(RTMQTTCLIENT_PARAMS_GROUP);
+
+    if (!settings.contains(RTMQTTCLIENT_PARAMS_BROKERADDRESS))
+        settings.setValue(RTMQTTCLIENT_PARAMS_BROKERADDRESS, "tcp://localhost:1883");
+    if (!settings.contains(RTMQTTCLIENT_PARAMS_CLIENTID))
+        settings.setValue(RTMQTTCLIENT_PARAMS_CLIENTID, "rtcontrollermqtt");
+    if (!settings.contains(RTMQTTCLIENT_PARAMS_CLIENTSECRET))
+        settings.setValue(RTMQTTCLIENT_PARAMS_CLIENTSECRET, "rtcontrollermqtt");
+
+    settings.endGroup();
+}

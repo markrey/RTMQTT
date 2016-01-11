@@ -20,3 +20,42 @@
 //  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+#ifndef SETDEVICELEVEL_DLG_H
+#define SETDEVICELEVEL_DLG_H
+
+#include <qdialog.h>
+#include <qpushbutton.h>
+#include <qdial.h>
+#include <qlabel.h>
+#include <qprogressbar.h>
+
+class SetDeviceLevelDlg : public QDialog
+{
+    Q_OBJECT
+
+public:
+    SetDeviceLevelDlg(QWidget *parent, QString name, int level);
+
+    int newLevel();
+
+public slots:
+    void onClicked(bool);
+    void offClicked(bool);
+    void valueChanged(int);
+
+private:
+    void layoutWindow(QString name, int level);
+    int m_parentWidth;
+    int m_parentHeight;
+
+    QDial *m_level;
+    QPushButton *m_on;
+    QPushButton *m_off;
+    QProgressBar *m_value;
+
+    QPushButton *m_okButton;
+    QPushButton *m_cancelButton;
+};
+
+#endif // SETDEVICELEVEL_DLG_H

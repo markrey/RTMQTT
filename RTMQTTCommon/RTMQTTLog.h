@@ -20,3 +20,33 @@
 //  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+#ifndef _RTMQTTLOG_H_
+#define _RTMQTTLOG_H_
+
+#include "qstring.h"
+
+//  Log defines
+
+#define RTMQTT_LOG_LEVEL_DEBUG             0                   // debug level
+#define RTMQTT_LOG_LEVEL_INFO              1                   // info level
+#define RTMQTT_LOG_LEVEL_WARN              2                   // warn level
+#define RTMQTT_LOG_LEVEL_ERROR             3                   // error level
+
+#define RTMQTT_LOG_LEVEL_NONE              4                   // used to display no log messages
+
+class RTMQTTLog
+{
+public:
+    static void logDebug(const QString& tag, const QString& msg);   // log message at debug level
+    static void logInfo(const QString& tag, const QString& msg);    // log message at info level
+    static void logWarn(const QString& tag, const QString& msg);    // log message at warn level
+    static void logError(const QString& tag, const QString& msg);   // log message at error level
+    static void setLogDisplayLevel(int level) { m_logDisplayLevel = level;} // sets the log level to be displayed
+
+private:
+    static void addLogMessage(const QString& tag, const QString& msg, int level);
+    static int m_logDisplayLevel;
+};
+
+#endif //_RTMQTTLOG_H_

@@ -20,3 +20,24 @@
 //  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+#ifndef _RTMQTTARGS_H_
+#define _RTMQTTARGS_H_
+
+#include <qstringlist.h>
+
+class RTMQTTArgs
+{
+public:
+    static bool checkConsoleModeFlag(int argc, char *argv[]);   // checks if console mode
+    static bool checkDaemonModeFlag(int argc, char *argv[]);
+
+    static void setAppName(const QString& appName) { m_appName = appName; }
+    static const QString& getAppName() { return m_appName; }
+
+private:
+    static QString m_appName;
+
+};
+
+#endif  //_RTMQTTARGS_H_

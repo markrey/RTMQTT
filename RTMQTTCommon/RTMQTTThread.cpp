@@ -20,3 +20,32 @@
 //  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+#include "RTMQTTThread.h"
+
+RTMQTTThread::RTMQTTThread() : QObject()
+{
+}
+
+void RTMQTTThread::initThread()
+{
+    initModule();
+}
+
+void RTMQTTThread::resumeThread()
+{
+    m_thread = new InternalThread();
+    moveToThread(m_thread);
+    connect(m_thread, SIGNAL(started()), this, SLOT(internalRunLoop()));
+    connect(this, SIGNAL(internalEndThread()), this, SLOT(cleanup()));
+    connect(this, SIGNAL(internalKillThread()), m_thread, SLOT(quit()), Qt::DirectConnection);
+    connect(m_thread, SIGNAL(finished()), m_thread, SLOT(deleteLater()));
+    connect(m_thread, SIGNAL(finished()), this, SLOT(deleteLater()));
+    m_thread->start();
+}
+
+void RTMQTTThread::finishThread()
+{
+    stopModule();
+}
+

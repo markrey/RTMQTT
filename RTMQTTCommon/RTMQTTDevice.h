@@ -20,3 +20,49 @@
 //  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+#ifndef _RTMQTTDEVICE_H
+#define _RTMQTTDEVICE_H
+
+#include <qstring.h>
+#include <qdatetime.h>
+#include <qstringlist.h>
+#include <qjsonobject.h>
+
+//  JSON message defs
+
+#define RTMQTTDEVICE_JSON_UPDATELIST      "updateList"
+#define RTMQTTDEVICE_JSON_DELTA           "delta"
+#define RTMQTTDEVICE_JSON_ALERT           "alert"
+#define RTMQTTDEVICE_JSON_SETDEVICELEVEL  "setDeviceLevel"
+
+//  JSON field defs
+
+#define RTMQTTDEVICE_JSON_NAME            "name"
+#define RTMQTTDEVICE_JSON_DEVICEID        "deviceID"
+#define RTMQTTDEVICE_JSON_STATE           "state"
+#define RTMQTTDEVICE_JSON_CURRENTLEVEL    "currentLevel"
+#define RTMQTTDEVICE_JSON_NEWLEVEL        "newLevel"
+
+class RTMQTTDevice
+{
+public:
+    RTMQTTDevice();
+    RTMQTTDevice(const RTMQTTDevice &rhs);
+
+    bool read(const QString& topic, const QJsonObject& json);
+    void write(QJsonObject& json) const;
+
+    bool readNewLevel(const QJsonObject& json);
+    void writeNewLevel(QJsonObject& json) const;
+
+    QString controlTopic;
+    QString name;
+    int deviceID;
+    QString state;
+
+    int currentLevel;
+    int newLevel;
+};
+
+#endif // _RTMQTTDEVICE_H

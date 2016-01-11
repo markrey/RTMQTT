@@ -20,3 +20,32 @@
 //  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+#ifndef _CONTROLLERCLIENT_H
+#define _CONTROLLERCLIENT_H
+
+#include "RTMQTTClient.h"
+
+class ControllerClient : public RTMQTTClient
+{
+    Q_OBJECT
+
+public:
+    ControllerClient();
+
+public slots:
+    void setDeviceLevel(QString, QJsonObject);
+
+signals:
+    void newUpdate(QString, QJsonObject update);
+
+protected:
+    void clientInit();
+    void clientStop();
+    void clientProcessReceivedMessage(QString topic, QJsonObject json);
+    void clientTimer(QTimerEvent *);
+
+};
+
+#endif // _CONTROLLERCLIENT_H
+

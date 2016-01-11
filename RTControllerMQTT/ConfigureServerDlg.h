@@ -20,3 +20,42 @@
 //  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+#ifndef _CONFIGURESERVERDLG_H
+#define _CONFIGURESERVERDLG_H
+
+#include <qdialog.h>
+#include <qtablewidget.h>
+#include <qdialogbuttonbox.h>
+#include <qpushbutton.h>
+
+
+class ConfigureServerDlg : public QDialog
+{
+    Q_OBJECT
+
+public:
+    ConfigureServerDlg(QWidget *parent);
+
+public slots:
+    void onOk();
+    void onCancel();
+    void buttonClicked(QAbstractButton * button);
+
+private:
+    void layoutWindow();
+    void insertTableRow(int row, QString value);
+
+    QTableWidget *m_serverTable;
+    QDialogButtonBox *m_buttons0;
+    QDialogButtonBox *m_buttons1;
+    QPushButton *m_buttonAddRow;
+    QPushButton *m_buttonAppendRow;
+    QPushButton *m_buttonDeleteRow;
+
+    bool m_changed;
+
+};
+
+
+#endif // CONFIGURESERVERDLG_H

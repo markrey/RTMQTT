@@ -20,3 +20,31 @@
 //  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+#include "RTMQTTLog.h"
+
+#include "qdatetime.h"
+#include "qdebug.h"
+
+//  log level
+
+#ifdef QT_NO_DEBUG
+int RTMQTTLog::m_logDisplayLevel = RTMQTT_LOG_LEVEL_WARN;
+#else
+int RTMQTTLog::m_logDisplayLevel = RTMQTT_LOG_LEVEL_DEBUG;
+#endif
+
+void RTMQTTLog::logDebug(const QString& tag, const QString& msg) { RTMQTTLog::addLogMessage(tag, msg, RTMQTT_LOG_LEVEL_DEBUG); }
+void RTMQTTLog::logInfo(const QString& tag, const QString& msg) { RTMQTTLog::addLogMessage(tag, msg,  RTMQTT_LOG_LEVEL_INFO); }
+void RTMQTTLog::logWarn(const QString& tag, const QString& msg) { RTMQTTLog::addLogMessage(tag, msg,  RTMQTT_LOG_LEVEL_WARN); }
+void RTMQTTLog::logError(const QString& tag, const QString& msg) { RTMQTTLog::addLogMessage(tag, msg,  RTMQTT_LOG_LEVEL_ERROR); }
+
+
+void RTMQTTLog::addLogMessage(const QString& tag, const QString& msg, int level)
+{
+    if (level < m_logDisplayLevel)
+        return;
+
+    QString logMsg(QDateTime::currentDateTime().toString() + " " + tag + "(" + QString::number(level) + "): " + msg);
+    qDebug() << qPrintable(logMsg);
+}

@@ -20,3 +20,44 @@
 //  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+#ifndef MAINTABLE_H
+#define MAINTABLE_H
+
+#include <QTableWidget>
+#include <QGestureEvent>
+
+#define MAINTABLE_ROW_HEIGHT 70
+
+class MainTable : public QTableWidget
+{
+    Q_OBJECT
+public:
+    explicit MainTable(QWidget *parent = 0);
+
+signals:
+    void tapAndHold();
+
+public slots:
+    void newSize(QSize);
+
+protected:
+
+    bool viewportEvent(QEvent *event);
+
+private:
+    void touchBegin(QTouchEvent *event);
+    void touchUpdate(QTouchEvent *event);
+    void touchEnd(QTouchEvent *event);
+    void touchCancel(QTouchEvent *event);
+    bool processGesture(QGestureEvent *event);
+    void swipe(QSwipeGesture *gesture);
+    void pan(QPanGesture *gesture);
+    void pinch(QPinchGesture *gesture);
+    void tap(QTapGesture *gesture);
+    bool tapAndHold(QTapAndHoldGesture *gesture);
+
+    int m_currentDelta;
+ };
+
+#endif // MAINTABLE_H
