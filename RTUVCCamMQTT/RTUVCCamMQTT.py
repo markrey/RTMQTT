@@ -68,8 +68,8 @@ cameraRate = 30
 try:
     opts, args = getopt.getopt(sys.argv[1:], "b:c:d:h:i:r:s:w:xy")
 except:
-    print ('RTUVCCamMQTT.py -b <brokerAddr> -c <clientID> -d <deviceID> -h <height> -r <rate> -s <secret>')
-    print ('  -w <width> -x -y')
+    print ('RTUVCCamMQTT.py -b <brokerAddr> -c <clientID> -d <deviceID> -h <height>')
+    print ('   -i <cameraIndex> -r <rate> -s <secret> -w <width> -x -y')
     print ('\n  -x = console mode')
     print ('  -y = daemon mode')
     print ('\nDefaults:')
@@ -93,7 +93,7 @@ for opt, arg in opts:
     if opt == '-h':
         cameraHeight = int(arg)
     if opt == '-i':
-        cameraindex = int(arg)
+        cameraIndex = int(arg)
     if opt == '-r':
         cameraRate = int(arg)
     if opt == '-s':
