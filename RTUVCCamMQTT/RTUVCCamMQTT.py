@@ -33,8 +33,8 @@ import sys
 import time
 import json
 import paho.mqtt.client as paho
-import binascii
 import getopt
+import base64
 
 sys.path.append('../SensorDrivers')
 
@@ -152,7 +152,7 @@ while(True):
             else:
                 RTUVCCam.displayImage(frame, width, height, "")
             
-            binImage = binascii.hexlify(frame)
+            binImage = base64.b64encode(frame)
 
             sensorDict = {}
             sensorDict[SensorJSON.TIMESTAMP] = time.time()

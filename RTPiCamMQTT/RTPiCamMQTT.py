@@ -31,7 +31,7 @@ import getopt
 import time
 import json
 import paho.mqtt.client as paho
-import binascii
+import base64
 import picamera
 
 sys.path.append('../SensorDrivers')
@@ -72,7 +72,7 @@ def piCameraSendFrameHelper(stream, frame):
     # get the frame data and display it
     stream.seek(frame.position)
     image = stream.read(frame.frame_size)
-    binImage = binascii.hexlify(image)
+    binImage = base64.b64encode(image)
 
     sensorDict = {}
     sensorDict[SensorJSON.TIMESTAMP] = time.time()

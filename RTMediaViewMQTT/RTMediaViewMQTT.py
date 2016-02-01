@@ -28,11 +28,12 @@ import pygame
 import pyaudio
 import sys
 import paho.mqtt.client as paho
-import binascii
 import cStringIO
 import getopt
 import time
 import json
+import base64
+
 sys.path.append('../SensorDrivers')
 
 import SensorJSON
@@ -62,7 +63,7 @@ def onMessage(client, userdata, message):
                     size=(int(jsonObj[SensorJSON.VIDEO_WIDTH]), int(jsonObj[SensorJSON.VIDEO_HEIGHT]))
                     screen = pygame.display.set_mode(size)
 
-                image = binascii.unhexlify(jsonObj[SensorJSON.VIDEO_DATA])
+                image = base64.b64decode(jsonObj[SensorJSON.VIDEO_DATA])
                 imageFile = cStringIO.StringIO(image)
                 imageSurface = pygame.image.load(imageFile)
                 screen.blit(imageSurface, (0, 0))
@@ -77,7 +78,7 @@ def onMessage(client, userdata, message):
                     firstAudio = False
                     audioStream = audioDevice.open(format=pyaudio.paInt16, channels=int(jsonObj[SensorJSON.AUDIO_CHANNELS]),
                         rate=int(jsonObj[SensorJSON.AUDIO_RATE]), output=True)
-                samples = binascii.unhexlify(jsonObj[SensorJSON.AUDIO_DATA])
+                samples = base64.b64decode(jsonObj[SensorJSON.AUDIO_DATA])
                 audioStream.write(samples)
             except:
                 print ("audio data error", sys.exc_info()[0],sys.exc_info()[1])

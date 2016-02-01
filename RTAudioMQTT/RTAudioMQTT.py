@@ -31,8 +31,8 @@ import sys
 import time
 import json
 import paho.mqtt.client as paho
-import binascii
 import getopt
+import base64
 
 sys.path.append('../SensorDrivers')
 
@@ -44,7 +44,7 @@ import SensorJSON
 '''
 def callback(samples, frame_count, time_info, status):
 
-    binSamples = binascii.hexlify(str(samples))
+    binSamples = base64.b64encode(str(samples))
 
     sensorDict = {}
     sensorDict[SensorJSON.TIMESTAMP] = time.time()
