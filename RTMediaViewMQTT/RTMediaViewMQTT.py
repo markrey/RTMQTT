@@ -44,6 +44,8 @@ import SensorJSON
 '''
 
 def onConnect(client, userdata, code):
+    MQTTClient.subscribe(videoTopic, 0)
+    MQTTClient.subscribe(audioTopic, 0)
     print('Connected: ' + str(code))
     sys.stdout.flush()
 
@@ -155,9 +157,6 @@ while True:
 pygame.init()
 
 audioDevice = pyaudio.PyAudio()
-
-MQTTClient.subscribe(videoTopic, 0)
-MQTTClient.subscribe(audioTopic, 0)
 
 MQTTClient.loop_start()
 

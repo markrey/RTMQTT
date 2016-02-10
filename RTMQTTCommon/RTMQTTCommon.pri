@@ -30,12 +30,14 @@ HEADERS += $$PWD/RTMQTTThread.h \
     $$PWD/RTMQTTLog.h \
     $$PWD/RTMQTTClient.h \
     $$PWD/RTMQTTDevice.h \
+    $$PWD/ConfigureServerDlg.h \
 
 SOURCES += $$PWD/RTMQTTThread.cpp \
     $$PWD/RTMQTTArgs.cpp \
     $$PWD/RTMQTTLog.cpp \
     $$PWD/RTMQTTClient.cpp \
     $$PWD/RTMQTTDevice.cpp \
+    $$PWD/ConfigureServerDlg.cpp \
 
 
 

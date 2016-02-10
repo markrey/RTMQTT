@@ -50,3 +50,8 @@ AUDIO_RATE = 'arate'                    # audio sample rate
 AUDIO_CHANNELS = 'achannels'            # number of audio channels
 AUDIO_SAMPTYPE = 'asamptype'            # sample type (eg int16)
 AUDIO_FORMAT = 'aformat'
+
+# variables using in JSON decode speech records
+
+DECODEDSPEECH_TEXT = 'text'             # the decoded speech as text
+DECODEDSPEECH_SAY = 'say'               # what should be said

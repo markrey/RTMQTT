@@ -24,13 +24,13 @@
 //  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-import pyaudio
 import sys
 import time
 import json
 import paho.mqtt.client as paho
 import getopt
 import base64
+import subprocess
 
 sys.path.append('../SensorDrivers')
 
@@ -38,95 +38,67 @@ import SensorJSON
 
 '''
 ------------------------------------------------------------
-    pyaudio callbacks
-'''
-def callback(samples, frame_count, time_info, status):
-
-    binSamples = base64.b64encode(str(samples))
-
-    sensorDict = {}
-    sensorDict[SensorJSON.TIMESTAMP] = time.time()
-    sensorDict[SensorJSON.DEVICEID] = deviceID
-    sensorDict[SensorJSON.TOPIC] = audioTopic
-    sensorDict[SensorJSON.AUDIO_DATA] = binSamples
-    sensorDict[SensorJSON.AUDIO_CHANNELS] = audioChannels
-    sensorDict[SensorJSON.AUDIO_RATE] = audioRate
-    sensorDict[SensorJSON.AUDIO_SAMPTYPE] = 'int16'
-    sensorDict[SensorJSON.AUDIO_FORMAT] = 'pcm'
-
-    MQTTClient.publish(audioTopic, json.dumps(sensorDict))        
-    return (None, pyaudio.paContinue)
-
-
-'''
-------------------------------------------------------------
     MQTT callbacks
 '''
 
 def onConnect(client, userdata, code):
+    MQTTClient.subscribe(topic, 0)
     print('Connected: ' + str(code))
     sys.stdout.flush()
+
+def onMessage(client, userdata, message):
+    try:
+        jsonObj = json.loads(message.payload)
+        text = jsonObj[SensorJSON.DECODEDSPEECH_TEXT]
+        say = jsonObj[SensorJSON.DECODEDSPEECH_SAY]
+        print(text)
+        if len(say) == 0:
+            return
+        subprocess.call(['espeak', say.encode('utf-8')])
+
+    except:
+        print ("JSON error", sys.exc_info()[0],sys.exc_info()[1])
 
 '''
 ------------------------------------------------------------
     Main code
 '''
 
-deviceID = 'rtaudio'
+deviceID = 'rtdecodedspeech'
 brokerAddress = 'localhost'
-deviceSecret = 'rtaudio'
-clientID = 'rtaudiomqttclient'
-audioIndex = 0
-audioRate = 16000
-audioChannels = 1
+deviceSecret = 'rtdecodedspeech'
+clientID = 'rtdecodedspeechmqttclient'
+topic = 'rtsrserver/decodedspeech'
 
 # process command line args
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "b:c:d:h:r:s:y")
+    opts, args = getopt.getopt(sys.argv[1:], "b:c:d:s")
 except:
-    print ('RTAudioMQTT.py -b <brokerAddr> -c <clientID> -d <deviceID> -h <channels>')
-    print ('  -r <rate> -s <secret> -y')
-    print ('  -y = daemon mode')
+    print ('RTDecodedSpeechMQTT.py -b <brokerAddr> -c <clientID> -d <deviceID> -s <secret -t <topic>')
     print ('\nDefaults:')
     print ('  -b localhost (hostname or IP address)')
     print ('  -c rtaudiomqttclient')
-    print ('  -d rtaudio')
-    print ('  -h 1')
-    print ('  -r 16000')
-    print ('  -s rtaudio')
+    print ('  -d rtdecodedspeech')
+    print ('  -s rtdecodedspeech')
+    print ('  -t rtsrserver/decodedspeech')
     sys.exit(2)
 
 for opt, arg in opts:
-    if opt == '-a':
-        audioCard = int(arg)
     if opt == '-b':
         brokerAddress = arg
     if opt == '-c':
         clientID = arg
     if opt == '-d':
         deviceID = arg
-    if opt == '-h':
-        audioChannels = int(arg)
-    if opt == '-j':
-        audioDevice = int(arg)
-    if opt == '-r':
-        audioRate = int(arg)
     if opt == '-s':
         deviceSecret = arg
+    if opt == '-t':
+        topic = arg
         
-        
-# start up the audio device
-
-audioDevice = pyaudio.PyAudio()
-audioBlockSize = audioRate / 20
-audioStream = audioDevice.open(stream_callback = callback, format=pyaudio.paInt16, channels = audioChannels, 
-                        rate=audioRate, input=True, output=False, frames_per_buffer=audioBlockSize)
-
-audioTopic = deviceID + '/audio'
-
 MQTTClient = paho.Client(clientID, protocol=paho.MQTTv31)
 MQTTClient.on_connect = onConnect
+MQTTClient.on_message = onMessage
 
 MQTTClient.username_pw_set(deviceID, deviceSecret)
 
@@ -142,18 +114,18 @@ while True:
 
 MQTTClient.loop_start()
 
-print("RTAudioMQTT starting...")
+print("RTDecodedSpeechMQTT starting...")
 sys.stdout.flush()
-
-audioStream.start_stream()
         
-while audioStream.is_active():
-    time.sleep(0.1) 
+try:
+    while True:
+        # could add some extra functionality here if required
+        time.sleep(1)
+        pass
+except:
+    pass
 
 # Exiting so clean everything up.   
         
-audioStream.stop_stream()
-audioStream.close()
-audioDevice.terminate()
 MQTTClient.loop_stop()
 print("Exiting")

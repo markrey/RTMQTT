@@ -53,6 +53,7 @@ topicMap = {}
 '''
 
 def onConnect(client, userdata, code):
+    MQTTClient.subscribe(sensorTopic, 0)
     print('Connected: ' + str(code))
     sys.stdout.flush()
 
@@ -142,8 +143,6 @@ while True:
     except:
         print ("waiting to connect to broker",brokerAddress)
         time.sleep(1)
-
-MQTTClient.subscribe(sensorTopic, 0)
 
 MQTTClient.loop_start()
 

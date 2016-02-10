@@ -30,7 +30,6 @@ HEADERS += $$PWD/RTControllerMQTT.h \
     $$PWD/MainTable.h \
     $$PWD/SetDeviceLevelDlg.h \
     $$PWD/ConfigureDlg.h \
-    $$PWD/ConfigureServerDlg.h \
 
 SOURCES += $$PWD/main.cpp \
     $$PWD/RTControllerMQTT.cpp \
@@ -38,4 +37,3 @@ SOURCES += $$PWD/main.cpp \
     $$PWD/MainTable.cpp \
     $$PWD/SetDeviceLevelDlg.cpp \
     $$PWD/ConfigureDlg.cpp \
-    $$PWD/ConfigureServerDlg.cpp \
