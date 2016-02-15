@@ -29,6 +29,9 @@
 DEVICEID = 'deviceID'                   # id of device
 TOPIC = 'topic'                         # original message topic
 TIMESTAMP = 'timestamp'                 # seconds since epoch
+
+# sensor types
+
 ACCEL_DATA = 'accel'                    # accelerometer x, y, z data in gs
 LIGHT_DATA = 'light'                    # light data in lux
 TEMPERATURE_DATA = 'temperature'        # temperature data in degrees C
@@ -51,7 +54,3 @@ AUDIO_CHANNELS = 'achannels'            # number of audio channels
 AUDIO_SAMPTYPE = 'asamptype'            # sample type (eg int16)
 AUDIO_FORMAT = 'aformat'
 
-# variables using in JSON decode speech records
-
-DECODEDSPEECH_TEXT = 'text'             # the decoded speech as text
-DECODEDSPEECH_SAY = 'say'               # what should be said

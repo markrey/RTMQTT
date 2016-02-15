@@ -36,6 +36,9 @@ sys.path.append('../SensorDrivers')
 
 import SensorJSON
 
+sayString = ""
+sayIt = False
+
 '''
 ------------------------------------------------------------
     MQTT callbacks
@@ -47,15 +50,16 @@ def onConnect(client, userdata, code):
     sys.stdout.flush()
 
 def onMessage(client, userdata, message):
+    global sayString, sayIt
+    
     try:
         jsonObj = json.loads(message.payload)
-        text = jsonObj[SensorJSON.DECODEDSPEECH_TEXT]
-        say = jsonObj[SensorJSON.DECODEDSPEECH_SAY]
+        text = jsonObj['text']
+        sayString = jsonObj['say']
         print(text)
-        if len(say) == 0:
+        if len(sayString) == 0:
             return
-        subprocess.call(['espeak', say.encode('utf-8')])
-
+        sayIt = True
     except:
         print ("JSON error", sys.exc_info()[0],sys.exc_info()[1])
 
@@ -96,6 +100,8 @@ for opt, arg in opts:
     if opt == '-t':
         topic = arg
         
+ttsCompleteTopic = deviceID + '/ttscomplete'
+
 MQTTClient = paho.Client(clientID, protocol=paho.MQTTv31)
 MQTTClient.on_connect = onConnect
 MQTTClient.on_message = onMessage
@@ -119,9 +125,22 @@ sys.stdout.flush()
         
 try:
     while True:
-        # could add some extra functionality here if required
-        time.sleep(1)
-        pass
+        if sayIt:
+            ttsComplete = {}
+            ttsComplete[SensorJSON.TIMESTAMP] = time.time()
+            ttsComplete[SensorJSON.DEVICEID] = deviceID
+            ttsComplete[SensorJSON.TOPIC] = ttsCompleteTopic
+            ttsComplete['complete'] = False
+            MQTTClient.publish(ttsCompleteTopic, json.dumps(ttsComplete))   
+            time.sleep(2) 	
+            subprocess.call(['espeak', "aaa"])
+            subprocess.call(['espeak', sayString.encode('utf-8')])
+            time.sleep(2)
+            ttsComplete['complete'] = True
+            MQTTClient.publish(ttsCompleteTopic, json.dumps(ttsComplete))  
+            sayIt = False;
+        else:
+            time.sleep(2)
 except:
     pass
 
